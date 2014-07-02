@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		065C2FF4195AC93B00B0D26B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 065C2FF3195AC93B00B0D26B /* main.cpp */; };
 		065C2FF6195AC93B00B0D26B /* rdvlisp.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 065C2FF5195AC93B00B0D26B /* rdvlisp.1 */; };
+		06A79CBB196036C90049A59E /* reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06A79CB9196036C90049A59E /* reader.cpp */; };
+		06A79CC1196041480049A59E /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06A79CBF196041480049A59E /* types.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +30,10 @@
 		065C2FF0195AC93B00B0D26B /* rdvlisp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = rdvlisp; sourceTree = BUILT_PRODUCTS_DIR; };
 		065C2FF3195AC93B00B0D26B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		065C2FF5195AC93B00B0D26B /* rdvlisp.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = rdvlisp.1; sourceTree = "<group>"; };
+		06A79CB9196036C90049A59E /* reader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = reader.cpp; sourceTree = "<group>"; };
+		06A79CBA196036C90049A59E /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
+		06A79CBF196041480049A59E /* types.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = types.cpp; sourceTree = "<group>"; };
+		06A79CC0196041480049A59E /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,7 +67,11 @@
 			isa = PBXGroup;
 			children = (
 				065C2FF3195AC93B00B0D26B /* main.cpp */,
+				06A79CB9196036C90049A59E /* reader.cpp */,
+				06A79CBA196036C90049A59E /* reader.h */,
 				065C2FF5195AC93B00B0D26B /* rdvlisp.1 */,
+				06A79CBF196041480049A59E /* types.cpp */,
+				06A79CC0196041480049A59E /* types.h */,
 			);
 			path = rdvlisp;
 			sourceTree = "<group>";
@@ -117,7 +127,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				06A79CBB196036C90049A59E /* reader.cpp in Sources */,
 				065C2FF4195AC93B00B0D26B /* main.cpp in Sources */,
+				06A79CC1196041480049A59E /* types.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -197,6 +209,12 @@
 		065C2FFA195AC93B00B0D26B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/opt/local/include,
+				);
+				LIBRARY_SEARCH_PATHS = /opt/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -204,6 +222,12 @@
 		065C2FFB195AC93B00B0D26B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					/opt/local/include,
+				);
+				LIBRARY_SEARCH_PATHS = /opt/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -227,6 +251,7 @@
 				065C2FFB195AC93B00B0D26B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
