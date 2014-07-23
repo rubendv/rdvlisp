@@ -36,18 +36,31 @@ namespace rdvlisp {
         };
         std::ostream& operator<<(std::ostream& os, identifier identifier);
         
+        class keyword {
+        public:
+            std::string name;
+            keyword(const std::string& name) : name(name) {
+                if(name.size() == 0) {
+                    throw std::invalid_argument("name must be non-empty");
+                }
+            }
+        };
+        std::ostream& operator<<(std::ostream& os, keyword keyword);
+        
         class integer {
         public:
             std::string value;
             std::string postfix;
             integer(const std::string& value, const std::string& postfix="") : value(value), postfix(postfix) {}
         };
+        std::ostream& operator<<(std::ostream& os, integer integer);
         class floating_point {
         public:
             std::string value;
             std::string postfix;
             floating_point(const std::string& value, const std::string& postfix="") : value(value), postfix(postfix) {}
         };
+        std::ostream& operator<<(std::ostream& os, floating_point floating_point);
         
         class array {
         public:
@@ -62,10 +75,11 @@ namespace rdvlisp {
             std::string contents;
             string(const std::string& contents, const std::string& prefix="") : contents(contents), prefix(prefix) {}
         };
+        std::ostream& operator<<(std::ostream& os, string string);
         
         class expression {
         public:
-            boost::variant<identifier, integer, floating_point, array, string> variant;
+            boost::variant<identifier, integer, floating_point, array, string, keyword> variant;
             expression(decltype(variant) variant) : variant(variant) {}
             expression(const expression& expression) : variant(expression.variant) {}
             expression(expression_ref expression_ref) : variant(expression_ref->variant) {}
@@ -74,6 +88,7 @@ namespace rdvlisp {
             expression(array x) : variant(x) {}
             expression(string x) : variant(x) {}
             expression(integer x) : variant(x) {}
+            expression(keyword x) : variant(x) {}
         };
         std::ostream& operator<<(std::ostream& os, expression expression);
     }
@@ -81,7 +96,7 @@ namespace rdvlisp {
     class read_error : public std::runtime_error {
     private:
         template <typename T>
-        static std::string stringify(const T& what, std::istream::streampos start, std::istream::streampos end) {
+        static std::string stringify(const T& what, size_t start, size_t end) {
             std::stringstream ss;
             ss << "at position [" << start << ", ";
             if(end != -1) {
@@ -92,14 +107,14 @@ namespace rdvlisp {
         }
     public:
         template <typename T>
-        read_error(const T& what, std::istream::streampos start, std::istream::streampos end) : std::runtime_error(stringify(what, start, end)) {}
+        read_error(const T& what, size_t start, size_t end) : std::runtime_error(stringify(what, start, end)) {}
     };
     
     template <typename T, typename E=std::string>
     class result {
         boost::variant<T, E> variant;
     public:
-        std::istream::streampos start, end;
+        size_t start, end;
         bool fail() const {
             class visitor : public boost::static_visitor<bool> {
             public:
@@ -129,11 +144,11 @@ namespace rdvlisp {
                 return boost::get<E>(variant);
             }
         }
-        result(T t, std::istream::streampos start, std::istream::streampos end) : variant(t), start(start), end(end) {}
-        result(E e, std::istream::streampos start, std::istream::streampos end) : variant(e), start(start), end(end) {}
+        result(T t, size_t start, size_t end) : variant(t), start(start), end(end) {}
+        result(E e, size_t start, size_t end) : variant(e), start(start), end(end) {}
     };
     
-    result<ast::expression_ref> read(const std::string& source);
+    result<ast::expression_ref> read(const std::string& source, size_t start=0);
 }
 
 #endif /* defined(__rdvlisp__reader__) */
