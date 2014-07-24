@@ -128,6 +128,7 @@ Token get_token_string(const std::string& s, size_t start) {
                         case 'b':
                         case 'a':
                         case 'f':
+                        case '\\':
                             break;
                         default:
                             return Token(Token::Type::error, "unsupported escape sequence", start, current+1);
@@ -226,7 +227,7 @@ Token get_token(const std::string& s, size_t start) {
                 return get_token_identifier(s, current);
             } else {
                 std::stringstream ss;
-                ss << "unexpected character 0x" << std::ios::hex << std::setw(2) << std::setfill('0') << s[current];
+                ss << "unexpected character '" << s[current] << "'";
                 return Token(Token::Type::error, ss.str(), current, current+1);
             }
     }
@@ -262,30 +263,29 @@ std::ostream& rdvlisp::ast::operator<<(std::ostream& os, array array) {
 }
 
 std::ostream& rdvlisp::ast::operator<<(std::ostream& os, identifier identifier) {
-    os << "identifier(";
     if(identifier.name.size() > 0) {
         os << identifier.name[0];
     }
     for(auto it = ++identifier.name.begin(); it != identifier.name.end(); ++it) {
         os << "." << *it;
     }
-    return os << ")";
+    return os;
 }
 
 std::ostream& rdvlisp::ast::operator<<(std::ostream& os, keyword keyword) {
-    return os << "keyword(" << keyword.name.substr(1, keyword.name.size()-1) << ")";
+    return os << ":" << keyword.name.substr(1, keyword.name.size()-1);
 }
 
 std::ostream& rdvlisp::ast::operator<<(std::ostream& os, floating_point floating_point) {
-    return os << "floating_point(" << floating_point.value << ")";
+    return os << floating_point.value;
 }
 
 std::ostream& rdvlisp::ast::operator<<(std::ostream& os, integer integer) {
-    return os << "integer(" << integer.value << ")";
+    return os << integer.value;
 }
 
 std::ostream& rdvlisp::ast::operator<<(std::ostream& os, string string) {
-    return os << "string(" << string.contents << ")";
+    return os << "\"" << string.contents << "\"";
 }
 
 result<array> read_array(const std::string& s, size_t start) {
@@ -341,12 +341,47 @@ result<expression_ref> rdvlisp::read(const std::string& s, size_t start) {
     Token token;
     while(current < s.size()) {
         token = get_token(s, current);
+        if(token.type == Token::Type::whitespace) {
+            start = token.end;
+            current = token.end;
+            continue;
+        }
+        std::stringstream ss;
+        size_t i;
         switch(token.type) {
             case Token::Type::array_start:
                 return make_result(read_array(s, current));
                 break;
             case Token::Type::string:
-                return make_result(result<string>(string(token.value.substr(1, token.value.size()-2)), start, token.end));
+                ss.str("");
+                ss.clear();
+                i = 1;
+                while(i < token.value.size()-1) {
+                    if(token.value[i] == '\\') {
+                        ++i;
+                        if(token.value[i] == 'n') {
+                            ss << '\n';
+                        } else if(token.value[i] == 't') {
+                            ss << '\t';
+                        } else if(token.value[i] == 'r') {
+                            ss << '\r';
+                        } else if(token.value[i] == 'f') {
+                            ss << '\f';
+                        } else if(token.value[i] == 'v') {
+                            ss << '\v';
+                        } else if(token.value[i] == 'b') {
+                            ss << '\b';
+                        } else if(token.value[i] == 'a') {
+                            ss << '\a';
+                        } else if(token.value[i] == '"' or token.value[i] == '\\') {
+                            ss << token.value[i];
+                        }
+                    } else {
+                        ss << token.value[i];
+                    }
+                    ++i;
+                }
+                return make_result(result<string>(string(ss.str()), start, token.end));
                 break;
             case Token::Type::identifier:
                 return make_result(result<identifier>(identifier(token.value), start, token.end));

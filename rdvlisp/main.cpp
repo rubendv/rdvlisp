@@ -28,13 +28,13 @@ std::vector<std::istream::streampos> line_start_positions(std::istream& is) {
 
 int main(int argc, const char * argv[])
 {
-    std::string s("(print-ln \"Hello, World!\\n\" :newline! 1.23e-23 2345 -0)");
-        auto result = rdvlisp::read(s);
-        if(result.good()) {
-            std::cout << *result.get() << std::endl;
-        } else if(result.end != 0) {
-            std::cerr << "Error " << rdvlisp::read_error(result.error(), result.start, result.end).what() << std::endl;
-        }
+    std::string s(" ( print-ln \"Hello, World!\\n\"    :newline! 1.23e-23 02345\n-0.1 )  " );
+    auto result = rdvlisp::read(s);
+    if(result.good()) {
+        std::cout << *result.get() << std::endl;
+    } else if(result.end != 0) {
+        std::cerr << "Error " << rdvlisp::read_error(result.error(), result.start, result.end).what() << std::endl;
+    }
     return 0;
 }
 

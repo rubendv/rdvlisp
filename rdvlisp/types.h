@@ -55,6 +55,7 @@ namespace rdvlisp {
                     throw std::out_of_range("array length must be non-zero");
                 }
             }
+            array(type_ref inner_type) : inner_type(inner_type), length() {}
         };
         class function {
         public:
@@ -79,10 +80,13 @@ namespace rdvlisp {
         class string {
         public:
         };
+        class keyword {
+        public:
+        };
         
         class type {
         public:
-            typedef boost::make_recursive_variant<integer, floating_point, array, function, type_variable, undetermined, string>::type variant_type;
+            typedef boost::make_recursive_variant<integer, floating_point, array, function, type_variable, undetermined, string, keyword>::type variant_type;
             variant_type variant;
             template <typename T>
             type(T t) : variant(t) {}
@@ -95,6 +99,9 @@ namespace rdvlisp {
             }
             std::string operator()(string t) const {
                 return "string";
+            }
+            std::string operator()(keyword t) const {
+                return "keyword";
             }
             std::string operator()(type_variable t) const {
                 std::string result;
