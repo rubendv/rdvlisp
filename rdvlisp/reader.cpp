@@ -285,7 +285,32 @@ std::ostream& rdvlisp::ast::operator<<(std::ostream& os, integer integer) {
 }
 
 std::ostream& rdvlisp::ast::operator<<(std::ostream& os, string string) {
-    return os << "\"" << string.contents << "\"";
+    os << "\"";
+    for(char c : string.contents) {
+        switch(c) {
+            case '\n':
+                os << "\\n";
+                break;
+            case '\t':
+                os << "\\t";
+                break;
+            case '\r':
+                os << "\\r";
+                break;
+            case '\v':
+                os << "\\v";
+                break;
+            case '\b':
+                os << "\\b";
+                break;
+            case '\a':
+                os << "\\a";
+                break;
+            default:
+                os << c;
+        }
+    }
+    return os << "\"";
 }
 
 result<array> read_array(const std::string& s, size_t start) {
