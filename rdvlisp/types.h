@@ -17,11 +17,11 @@
 
 namespace rdvlisp {
     namespace types {
-        class type;
-        typedef std::shared_ptr<type> type_ref;
+        class Type;
+        typedef std::shared_ptr<Type> TypeRef;
         template <typename T>
-        type_ref ref(T t) {
-            return std::make_shared<type>(t);
+        TypeRef ref(T t) {
+            return std::make_shared<Type>(t);
         }
         
         class pod {
@@ -33,81 +33,95 @@ namespace rdvlisp {
                 }
             }
         };
-        class integer : public pod {
+        class Integer : public pod {
         public:
             bool is_signed;
-            integer(uint64_t bits, bool is_signed=true) : pod(bits), is_signed(is_signed) {}
+            Integer(uint64_t bits, bool is_signed=true) : pod(bits), is_signed(is_signed) {}
         };
-        class floating_point : public pod {
+        class FloatingPoint : public pod {
         public:
-            floating_point(uint64_t bits) : pod(bits) {}
+            FloatingPoint(uint64_t bits) : pod(bits) {}
         };
-        class boolean : public pod {
+        class Boolean : public pod {
         public:
-            boolean() : pod(1) {}
+            Boolean() : pod(1) {}
         };
-        class array {
+        class Array {
         public:
             boost::optional<uint64_t> length;
-            type_ref inner_type;
-            array(type_ref inner_type, uint64_t length) : inner_type(inner_type), length(length) {
+            TypeRef inner_type;
+            Array(TypeRef inner_type, uint64_t length) : inner_type(inner_type), length(length) {
                 if(length == 0) {
                     throw std::out_of_range("array length must be non-zero");
                 }
             }
-            array(type_ref inner_type) : inner_type(inner_type), length() {}
+            Array(TypeRef inner_type) : inner_type(inner_type), length() {}
         };
-        class function {
+        class Function {
         public:
-            type_ref return_type;
-            std::vector<type_ref> argument_types;
+            TypeRef return_type;
+            std::vector<TypeRef> argument_types;
             bool is_vararg;
-            function(type_ref return_type, std::vector<type_ref> argument_types, bool is_vararg=false)
+            Function(TypeRef return_type, std::vector<TypeRef> argument_types, bool is_vararg=false)
             : return_type(return_type), argument_types(argument_types), is_vararg(is_vararg) {}
         };
-        class type_variable {
+        class TypeVariable {
         public:
             std::string name;
-            type_variable(const std::string& name) : name(name) {
+            TypeVariable(const std::string& name) : name(name) {
                 if(name.length() == 0) {
                     throw std::invalid_argument("name must not be an empty string");
                 }
             }
         };
-        class undetermined {
+        class Undetermined {
         public:
         };
-        class string {
+        class String {
         public:
         };
-        class keyword {
+        class Keyword {
         public:
         };
         
-        class type {
+        class Type {
         public:
-            typedef boost::make_recursive_variant<integer, floating_point, array, function, type_variable, undetermined, string, keyword>::type variant_type;
-            variant_type variant;
+            boost::variant<Integer, FloatingPoint, Array, Function, TypeVariable, Undetermined, String, Keyword> variant;
             template <typename T>
-            type(T t) : variant(t) {}
+            Type(T t) : variant(t) {}
         };
+        
+        static const types::TypeRef sint8(new types::Type(Integer(8, true)));
+        static const types::TypeRef uint8(new types::Type(Integer(8, false)));
+        static const types::TypeRef sint16(new types::Type(Integer(16, true)));
+        static const types::TypeRef uint16(new types::Type(Integer(16, false)));
+        static const types::TypeRef sint32(new types::Type(Integer(32, true)));
+        static const types::TypeRef uint32(new types::Type(Integer(32, false)));
+        static const types::TypeRef sint64(new types::Type(Integer(64, true)));
+        static const types::TypeRef uint64(new types::Type(Integer(64, false)));
+        
+        static const types::TypeRef float32(new types::Type(FloatingPoint(32)));
+        static const types::TypeRef float64(new types::Type(FloatingPoint(64)));
+        
+        static const types::TypeRef string(new types::Type(String()));
+        static const types::TypeRef undetermined(new types::Type(Undetermined()));
         
         class print_visitor : public boost::static_visitor<std::string> {
         public:
-            std::string operator()(undetermined t) const {
+            std::string operator()(Undetermined t) const {
                 return "undetermined";
             }
-            std::string operator()(string t) const {
+            std::string operator()(String t) const {
                 return "string";
             }
-            std::string operator()(keyword t) const {
+            std::string operator()(Keyword t) const {
                 return "keyword";
             }
-            std::string operator()(type_variable t) const {
+            std::string operator()(TypeVariable t) const {
                 std::string result;
                 return t.name;
             }
-            std::string operator()(array t) const {
+            std::string operator()(Array t) const {
                 std::stringstream ss;
                 ss << "(array " << boost::apply_visitor(print_visitor(), t.inner_type->variant);
                 if(t.length) {
@@ -116,17 +130,17 @@ namespace rdvlisp {
                 ss << ")";
                 return ss.str();
             }
-            std::string operator()(integer t) const {
+            std::string operator()(Integer t) const {
                 std::stringstream ss;
                 ss << "(integer " << t.bits << " " << t.is_signed << ")";
                 return ss.str();
             }
-            std::string operator()(floating_point t) const {
+            std::string operator()(FloatingPoint t) const {
                 std::stringstream ss;
                 ss << "(floating-point " << t.bits << ")";
                 return ss.str();
             }
-            std::string operator()(function t) const {
+            std::string operator()(Function t) const {
                 std::stringstream ss;
                 ss << "(function " << boost::apply_visitor(print_visitor(), t.return_type->variant);
                 if(t.argument_types.size() > 0) {

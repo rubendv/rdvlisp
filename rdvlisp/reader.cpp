@@ -15,7 +15,7 @@
 class Token {
 public:
     enum class Type {
-        array_start, array_end, integer, floating_point, string, identifier, keyword, quote, unquote, array_short, error, whitespace
+        tuple_start, tuple_end, integer, floating_point, string, identifier, keyword, quote, unquote, tuple_short, error, whitespace
     } type;
     
     size_t start;
@@ -26,8 +26,8 @@ public:
 };
 
 static std::map<Token::Type, std::string> token_type_to_string({
-    {Token::Type::array_start, "array_start"},
-    {Token::Type::array_end, "array_end"},
+    {Token::Type::tuple_start, "tuple_start"},
+    {Token::Type::tuple_end, "tuple_end"},
     {Token::Type::integer, "integer"},
     {Token::Type::floating_point, "floating_point"},
     {Token::Type::string, "string"},
@@ -35,7 +35,7 @@ static std::map<Token::Type, std::string> token_type_to_string({
     {Token::Type::keyword, "keyword"},
     {Token::Type::quote, "quote"},
     {Token::Type::unquote, "unquote"},
-    {Token::Type::array_short, "array_short"},
+    {Token::Type::tuple_short, "tuple_short"},
     {Token::Type::whitespace, "whitespace"},
     {Token::Type::error, "error"}
 });
@@ -180,13 +180,13 @@ Token get_token(const std::string& s, size_t start) {
     Token token;
     switch(s[current]) {
         case '(':
-            return Token(Token::Type::array_start, "(", current, current+1);
+            return Token(Token::Type::tuple_start, "(", current, current+1);
             break;
         case ')':
-            return Token(Token::Type::array_end, ")", current, current+1);
+            return Token(Token::Type::tuple_end, ")", current, current+1);
             break;
         case '#':
-            return Token(Token::Type::array_short, "#", current, current+1);
+            return Token(Token::Type::tuple_short, "#", current, current+1);
             break;
         case ',':
             return Token(Token::Type::unquote, ",", current, current+1);
@@ -246,23 +246,23 @@ public:
     }
 };
 
-std::ostream& rdvlisp::ast::operator<<(std::ostream& os, expression expression) {
+std::ostream& rdvlisp::ast::operator<<(std::ostream& os, Expression expression) {
     expression_print_visitor v(os);
     return expression.variant.apply_visitor(v);
 }
 
-std::ostream& rdvlisp::ast::operator<<(std::ostream& os, array array) {
+std::ostream& rdvlisp::ast::operator<<(std::ostream& os, Tuple tuple) {
     os << "(";
-    if(array.elements.size() > 0) {
-        os << *array.elements[0];
-        for(auto it = ++array.elements.begin(); it != array.elements.end(); ++it) {
+    if(tuple.elements.size() > 0) {
+        os << *tuple.elements[0];
+        for(auto it = ++tuple.elements.begin(); it != tuple.elements.end(); ++it) {
             os << " " << **it;
         }
     }
     return os << ")";
 }
 
-std::ostream& rdvlisp::ast::operator<<(std::ostream& os, identifier identifier) {
+std::ostream& rdvlisp::ast::operator<<(std::ostream& os, Identifier identifier) {
     if(identifier.name.size() > 0) {
         os << identifier.name[0];
     }
@@ -272,19 +272,19 @@ std::ostream& rdvlisp::ast::operator<<(std::ostream& os, identifier identifier) 
     return os;
 }
 
-std::ostream& rdvlisp::ast::operator<<(std::ostream& os, keyword keyword) {
+std::ostream& rdvlisp::ast::operator<<(std::ostream& os, Keyword keyword) {
     return os << ":" << keyword.name.substr(1, keyword.name.size()-1);
 }
 
-std::ostream& rdvlisp::ast::operator<<(std::ostream& os, floating_point floating_point) {
+std::ostream& rdvlisp::ast::operator<<(std::ostream& os, FloatingPoint floating_point) {
     return os << floating_point.value;
 }
 
-std::ostream& rdvlisp::ast::operator<<(std::ostream& os, integer integer) {
+std::ostream& rdvlisp::ast::operator<<(std::ostream& os, Integer integer) {
     return os << integer.value;
 }
 
-std::ostream& rdvlisp::ast::operator<<(std::ostream& os, string string) {
+std::ostream& rdvlisp::ast::operator<<(std::ostream& os, String string) {
     os << "\"";
     for(char c : string.contents) {
         switch(c) {
@@ -313,12 +313,12 @@ std::ostream& rdvlisp::ast::operator<<(std::ostream& os, string string) {
     return os << "\"";
 }
 
-result<array> read_array(const std::string& s, size_t start) {
+Result<Tuple> read_tuple(const std::string& s, size_t start) {
     auto current = start;
-    std::vector<expression_ref> elements;
+    std::vector<ExpressionRef> elements;
     Token token = get_token(s, start);
-    if(token.type != Token::Type::array_start) {
-        return result<array>("array not started with '('", start, token.end);
+    if(token.type != Token::Type::tuple_start) {
+        return Result<Tuple>("tuple not started with '('", start, token.end);
     }
     current = token.end;
     bool is_first = true;
@@ -326,25 +326,25 @@ result<array> read_array(const std::string& s, size_t start) {
     while(true) {
         token = get_token(s, current);
         if(token.type == Token::Type::error) {
-            return result<array>(token.value, start, token.end);
+            return Result<Tuple>(token.value, start, token.end);
         }
         if(token.type == Token::Type::whitespace) {
             sepby_whitespace = true;
             current = token.end;
             continue;
         }
-        if(token.type == Token::Type::array_end) {
-            return result<array>(array(elements), start, token.end);
+        if(token.type == Token::Type::tuple_end) {
+            return Result<Tuple>(Tuple(elements), start, token.end);
         }
         if(!is_first and !sepby_whitespace) {
-            return result<array>("array elements must be separated by whitespace", start, token.end);
+            return Result<Tuple>("tuple elements must be separated by whitespace", start, token.end);
         }
         auto r = read(s, current);
         if(r.good()) {
             elements.push_back(r.get());
             current = r.end;
         } else {
-            return result<array>(r.error(), start, r.end);
+            return Result<Tuple>(r.error(), start, r.end);
         }
         is_first = false;
         sepby_whitespace = false;
@@ -352,15 +352,15 @@ result<array> read_array(const std::string& s, size_t start) {
 }
 
 template <typename T>
-result<expression_ref> make_result(const result<T>& r) {
+Result<ExpressionRef> make_result(const Result<T>& r) {
     if(r.good()) {
-        return result<expression_ref>(std::make_shared<expression>(r.get()), r.start, r.end);
+        return Result<ExpressionRef>(std::make_shared<Expression>(r.get()), r.start, r.end);
     } else {
-        return result<expression_ref>(r.error(), r.start, r.end);
+        return Result<ExpressionRef>(r.error(), r.start, r.end);
     }
 }
 
-result<expression_ref> rdvlisp::read(const std::string& s, size_t start) {
+Result<ExpressionRef> rdvlisp::read(const std::string& s, size_t start) {
     size_t current = start;
     
     Token token;
@@ -374,8 +374,8 @@ result<expression_ref> rdvlisp::read(const std::string& s, size_t start) {
         std::stringstream ss;
         size_t i;
         switch(token.type) {
-            case Token::Type::array_start:
-                return make_result(read_array(s, current));
+            case Token::Type::tuple_start:
+                return make_result(read_tuple(s, current));
                 break;
             case Token::Type::string:
                 ss.str("");
@@ -406,24 +406,24 @@ result<expression_ref> rdvlisp::read(const std::string& s, size_t start) {
                     }
                     ++i;
                 }
-                return make_result(result<string>(string(ss.str()), start, token.end));
+                return make_result(Result<String>(String(ss.str()), start, token.end));
                 break;
             case Token::Type::identifier:
-                return make_result(result<identifier>(identifier(token.value), start, token.end));
+                return make_result(Result<Identifier>(Identifier(token.value), start, token.end));
                 break;
             case Token::Type::integer:
-                return make_result(result<integer>(integer(token.value), start, token.end));
+                return make_result(Result<Integer>(Integer(token.value), start, token.end));
                 break;
             case Token::Type::floating_point:
-                return make_result(result<floating_point>(floating_point(token.value), start, token.end));
+                return make_result(Result<FloatingPoint>(FloatingPoint(token.value), start, token.end));
                 break;
             case Token::Type::keyword:
-                return make_result(result<keyword>(keyword(token.value), start, token.end));
+                return make_result(Result<Keyword>(Keyword(token.value), start, token.end));
                 break;
             default:
-                return result<expression_ref>("unexpected token of type " + token_type_to_string[token.type] + " encountered", start, token.end);
+                return Result<ExpressionRef>("unexpected token of type " + token_type_to_string[token.type] + " encountered", start, token.end);
         }
     }
     
-    return result<expression_ref>("reached end of file", start, current);
+    return Result<ExpressionRef>("reached end of file", start, current);
 }

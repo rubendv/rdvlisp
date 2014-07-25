@@ -11,6 +11,7 @@
 		065C2FF6195AC93B00B0D26B /* rdvlisp.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 065C2FF5195AC93B00B0D26B /* rdvlisp.1 */; };
 		06A79CBB196036C90049A59E /* reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06A79CB9196036C90049A59E /* reader.cpp */; };
 		06A79CC1196041480049A59E /* types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06A79CBF196041480049A59E /* types.cpp */; };
+		06D5FBE3198139BE003F0E15 /* eval.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 06D5FBE1198139BE003F0E15 /* eval.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,6 +35,9 @@
 		06A79CBA196036C90049A59E /* reader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = reader.h; sourceTree = "<group>"; };
 		06A79CBF196041480049A59E /* types.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = types.cpp; sourceTree = "<group>"; };
 		06A79CC0196041480049A59E /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		06D5FBE1198139BE003F0E15 /* eval.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = eval.cpp; sourceTree = "<group>"; };
+		06D5FBE2198139BE003F0E15 /* eval.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eval.h; sourceTree = "<group>"; };
+		06D5FBE419813A74003F0E15 /* ast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ast.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +71,9 @@
 			isa = PBXGroup;
 			children = (
 				065C2FF3195AC93B00B0D26B /* main.cpp */,
+				06D5FBE1198139BE003F0E15 /* eval.cpp */,
+				06D5FBE2198139BE003F0E15 /* eval.h */,
+				06D5FBE419813A74003F0E15 /* ast.h */,
 				06A79CB9196036C90049A59E /* reader.cpp */,
 				06A79CBA196036C90049A59E /* reader.h */,
 				065C2FF5195AC93B00B0D26B /* rdvlisp.1 */,
@@ -128,6 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				06A79CBB196036C90049A59E /* reader.cpp in Sources */,
+				06D5FBE3198139BE003F0E15 /* eval.cpp in Sources */,
 				065C2FF4195AC93B00B0D26B /* main.cpp in Sources */,
 				06A79CC1196041480049A59E /* types.cpp in Sources */,
 			);

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include "reader.h"
+#include "eval.h"
 
 std::vector<std::istream::streampos> line_start_positions(std::istream& is) {
     auto initial = is.tellg();
@@ -33,7 +34,7 @@ int main(int argc, const char * argv[])
     if(result.good()) {
         std::cout << *result.get() << std::endl;
     } else if(result.end != 0) {
-        std::cerr << "Error " << rdvlisp::read_error(result.error(), result.start, result.end).what() << std::endl;
+        std::cerr << "Error " << rdvlisp::ReadError(result.error(), result.start, result.end).what() << std::endl;
     }
     return 0;
 }
